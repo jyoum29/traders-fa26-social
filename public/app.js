@@ -48,6 +48,11 @@ function selectedTeam(select) {
   return eventState.teams.find((team) => team.id === select.value);
 }
 
+function teamLabel(team) {
+  const members = (team.members || []).map(escapeHtml).join(" · ");
+  return `<span class="team-label"><span>${escapeHtml(team.name)}</span>${members ? `<small>${members}</small>` : ""}</span>`;
+}
+
 function setSelectTeams(select, placeholder) {
   const previous = select.value;
   select.innerHTML =
@@ -87,7 +92,7 @@ function renderLeaderboard() {
     .map(
       (team, index) => `<tr>
         <td class="rank">${String(index + 1).padStart(2, "0")}</td>
-        <td class="team-cell"><i class="team-swatch" style="background:${team.color}"></i>${escapeHtml(team.name)}</td>
+        <td class="team-cell"><i class="team-swatch" style="background:${team.color}"></i>${teamLabel(team)}</td>
         ${team.scores.map((score) => `<td class="game-score">${score}</td>`).join("")}
         <td class="total-score">${totalScore(team)}</td>
       </tr>`,
@@ -125,7 +130,7 @@ function renderLeaderboard() {
             const elapsed = twoSumElapsed(team);
             return `<div class="bar-row ${gameIndex === 1 ? "twosum-row" : ""} ${gameIndex === 1 && team.twoSum?.solved ? "solved" : ""}">
               <span class="bar-rank">${String(index + 1).padStart(2, "0")}</span>
-              <span class="bar-team"><i class="team-swatch" style="background:${team.color}"></i>${escapeHtml(team.name)}</span>
+              <span class="bar-team"><i class="team-swatch" style="background:${team.color}"></i>${teamLabel(team)}</span>
               <div class="bar-track"><div class="bar-fill" style="width:${width}%;background:${team.color}"></div></div>
               <strong class="bar-score">${score}</strong>
               ${
@@ -175,8 +180,11 @@ function renderSetup() {
       .map(
         (team) => `<div class="team-row">
           <i style="background:${team.color}"></i>
-          <span>${escapeHtml(team.name)}</span>
-          <button data-remove-team="${team.id}">Remove</button>
+          ${teamLabel(team)}
+          <div class="team-row-actions">
+            <button class="edit-members" data-edit-members="${team.id}">Edit people</button>
+            <button data-remove-team="${team.id}">Remove</button>
+          </div>
         </div>`,
       )
       .join("") || '<div class="test-placeholder">No teams have been added.</div>';
@@ -267,14 +275,28 @@ $$("[data-game-toggle]").forEach((button) => {
 $("#add-team-form").addEventListener("submit", (event) => {
   event.preventDefault();
   const input = $("#team-name-input");
-  socket.emit("team:add", input.value, (result) => {
+  const membersInput = $("#team-members-input");
+  socket.emit("team:add", { name: input.value, members: membersInput.value }, (result) => {
     if (!result.ok) return showToast(result.error);
     input.value = "";
+    membersInput.value = "";
     showToast(`${result.team.name} joined the Olympics.`);
   });
 });
 
 $("#team-list").addEventListener("click", (event) => {
+  const editTeamId = event.target.dataset.editMembers;
+  if (editTeamId) {
+    const team = eventState.teams.find((item) => item.id === editTeamId);
+    if (!team) return;
+    const members = prompt(
+      `People on ${team.name} (comma-separated):`,
+      (team.members || []).join(", "),
+    );
+    if (members !== null) socket.emit("team:members", { teamId: editTeamId, members });
+    return;
+  }
+
   const teamId = event.target.dataset.removeTeam;
   if (!teamId) return;
   const team = eventState.teams.find((item) => item.id === teamId);

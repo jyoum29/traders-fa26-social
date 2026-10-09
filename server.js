@@ -33,6 +33,7 @@ function loadState() {
       gameStarts,
       teams: (saved.teams || []).map((team) => ({
         ...team,
+        members: Array.isArray(team.members) ? team.members : [],
         scores: [...(team.scores || []), 0, 0].slice(0, 2),
         twoSum: {
           solved: false,
@@ -73,6 +74,11 @@ function cleanName(value, maxLength = 32) {
     .slice(0, maxLength);
 }
 
+function cleanMembers(value) {
+  const entries = Array.isArray(value) ? value : String(value || "").split(",");
+  return [...new Set(entries.map((name) => cleanName(name, 28)).filter(Boolean))].slice(0, 20);
+}
+
 function getTeam(id) {
   return state.teams.find((team) => team.id === id);
 }
@@ -88,8 +94,9 @@ app.get("/health", (_request, response) => response.json({ ok: true }));
 io.on("connection", (socket) => {
   socket.emit("state", state);
 
-  socket.on("team:add", (name, acknowledge) => {
-    const normalized = cleanName(name);
+  socket.on("team:add", (details, acknowledge) => {
+    const normalized = cleanName(typeof details === "string" ? details : details?.name);
+    const members = cleanMembers(typeof details === "string" ? [] : details?.members);
     if (!normalized) return acknowledge?.({ ok: false, error: "Enter a team name." });
     if (state.teams.some((team) => team.name.toLowerCase() === normalized.toLowerCase())) {
       return acknowledge?.({ ok: false, error: "That team already exists." });
@@ -99,6 +106,7 @@ io.on("connection", (socket) => {
     const team = {
       id: randomUUID(),
       name: normalized,
+      members,
       color: palette[state.teams.length % palette.length],
       scores: makeScores(),
       twoSum: {
@@ -124,6 +132,13 @@ io.on("connection", (socket) => {
     const normalized = cleanName(name);
     if (!team || !normalized) return;
     team.name = normalized;
+    broadcastState();
+  });
+
+  socket.on("team:members", ({ teamId, members }) => {
+    const team = getTeam(teamId);
+    if (!team) return;
+    team.members = cleanMembers(members);
     broadcastState();
   });
 
