@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f4f1e8" />
+    <title>Traders Olympics</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <header class="site-header">
+      <a class="brand" href="#leaderboard" aria-label="Traders Olympics home">
+        <span class="brand-mark">T</span>
+        <span>
+          <strong id="brand-name">Traders Olympics</strong>
+          <small>MIT · Social ’26</small>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-tab="leaderboard">Leaderboard</button>
+        <button class="nav-item" data-tab="zeta">ZetaMac Relay</button>
+        <button class="nav-item" data-tab="twosum">2 Sum</button>
+        <button class="nav-item developer-only hidden" data-tab="setup">Setup</button>
+      </nav>
+
+      <div class="mode-switch" role="group" aria-label="View mode">
+        <button class="active" data-mode="player">Player</button>
+        <button data-mode="developer">Developer</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="view active" id="leaderboard-view">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">LIVE STANDINGS <span class="live-dot"></span></p>
+            <h1>Olympic<br /><em>standings.</em></h1>
+            <p class="hero-copy">Two relay events. One live board. Scores update here as teams compete across the room.</p>
+          </div>
+          <div class="hero-stat">
+            <span id="team-count">0</span>
+            <p>teams<br />competing</p>
+          </div>
+        </div>
+
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THE BOARD</p>
+            <h2>Current rankings</h2>
+          </div>
+          <p class="updated-label">Synced live <span id="connection-state">· connecting</span></p>
+        </div>
+        <div class="leaderboard-tabs" id="leaderboard-tabs" role="tablist" aria-label="Leaderboard event"></div>
+        <div class="leaderboard-shell">
+          <div class="empty-state" id="leaderboard-empty">
+            <span>01</span>
+            <h3>No teams yet</h3>
+            <p>Switch to Developer mode and open Setup to add the first team.</p>
+          </div>
+          <div class="table-scroll hidden" id="leaderboard-table-wrap">
+            <table class="leaderboard-table">
+              <thead id="leaderboard-head"></thead>
+              <tbody id="leaderboard-body"></tbody>
+            </table>
+          </div>
+          <div class="game-leaderboard hidden" id="game-leaderboard"></div>
+        </div>
+      </section>
+
+      <section class="view" id="zeta-view">
+        <div class="game-header">
+          <div>
+            <p class="eyebrow">EVENT 01 · SPEED MATH</p>
+            <h1>ZetaMac <em>relay.</em></h1>
+          </div>
+          <p>Each runner gets 60 seconds. A five-second handoff separates every leg.</p>
+        </div>
+
+        <div class="game-access-bar">
+          <div>
+            <span class="status-dot" id="zeta-access-dot"></span>
+            <strong id="zeta-access-state">Waiting to start</strong>
+            <small id="zeta-access-copy">A developer must open this event.</small>
+          </div>
+          <button class="secondary-button developer-only hidden" data-game-toggle="0">Start ZetaMac</button>
+        </div>
+        <div class="game-layout" id="zeta-content">
+          <aside class="game-sidebar">
+            <label for="zeta-team">Competing team</label>
+            <select id="zeta-team"><option value="">Select a team</option></select>
+            <label for="zeta-legs">Number of runners</label>
+            <select id="zeta-legs">
+              <option>2</option>
+              <option>3</option>
+              <option selected>4</option>
+              <option>5</option>
+              <option>6</option>
+              <option>7</option>
+              <option>8</option>
+            </select>
+            <div class="rules-card">
+              <p class="eyebrow">FORMAT</p>
+              <ol>
+                <li><span>60 sec</span> solve</li>
+                <li><span>5 sec</span> handoff</li>
+                <li><span>+1</span> each answer</li>
+              </ol>
+            </div>
+          </aside>
+
+          <div class="game-locked" id="zeta-locked">
+            <span>01</span>
+            <h2>Get your team ready.</h2>
+            <p>Select your team and relay size. Everyone's timer begins when the developer starts.</p>
+          </div>
+
+          <div class="zeta-stage hidden" id="zeta-stage">
+            <div class="game-idle" id="zeta-idle">
+              <div class="event-number">01</div>
+              <h2>Relay in progress.</h2>
+              <p>Select your team to join at the current official relay time.</p>
+            </div>
+            <div class="zeta-playing hidden" id="zeta-playing">
+              <div class="round-meta">
+                <p id="zeta-runner">RUNNER 1 OF 4</p>
+                <div class="timer" id="zeta-timer">60.0</div>
+                <p>TEAM SCORE <strong id="zeta-score">0</strong></p>
+              </div>
+              <div class="timer-track"><span id="zeta-timer-bar"></span></div>
+              <div class="problem" id="zeta-problem">8 × 7</div>
+              <form id="zeta-form" autocomplete="off">
+                <input
+                  id="zeta-answer"
+                  type="text"
+                  inputmode="numeric"
+                  aria-label="Your answer"
+                  placeholder="?"
+                />
+                <button type="submit">Submit</button>
+              </form>
+              <p class="input-hint">Type an answer and press Enter</p>
+            </div>
+            <div class="handoff hidden" id="zeta-handoff">
+              <p class="eyebrow">HANDS OFF THE KEYBOARD</p>
+              <div class="handoff-count" id="handoff-count">5</div>
+              <h2>Tag the next runner.</h2>
+              <p id="handoff-next">Runner 2 is up next.</p>
+            </div>
+            <div class="game-finished hidden" id="zeta-finished">
+              <p class="eyebrow">RELAY COMPLETE</p>
+              <div class="finish-score" id="zeta-final-score">0</div>
+              <h2>correct answers</h2>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="twosum-view">
+        <div class="game-header">
+          <div>
+            <p class="eyebrow">EVENT 02 · CODE RELAY</p>
+            <h1>2 Sum, <em>line by line.</em></h1>
+          </div>
+          <p>One person writes one line. Use the controls to hand the keyboard to the next teammate.</p>
+        </div>
+
+        <div class="game-access-bar">
+          <div>
+            <span class="status-dot" id="twosum-access-dot"></span>
+            <strong id="twosum-access-state">Waiting to start</strong>
+            <small id="twosum-access-copy">A developer must open this event.</small>
+          </div>
+          <button class="secondary-button developer-only hidden" data-game-toggle="1">Start 2 Sum</button>
+        </div>
+        <div class="code-setup" id="twosum-setup">
+          <div>
+            <label for="twosum-team">Competing team</label>
+            <select id="twosum-team"><option value="">Select a team</option></select>
+          </div>
+          <button class="secondary-button" id="twosum-reset">Reset code</button>
+          <div class="code-clock" id="code-clock">00:00</div>
+        </div>
+
+        <div class="game-locked" id="twosum-locked">
+          <span>02</span>
+          <h2>Get your team ready.</h2>
+          <p>Select your team. Everyone's timer begins when the developer starts.</p>
+        </div>
+
+        <div class="code-layout hidden" id="twosum-content">
+          <section class="brief-panel">
+            <p class="eyebrow">THE CHALLENGE</p>
+            <h2>Two Sum</h2>
+            <p>Return the indices of the two numbers that add up to <code>target</code>. Exactly one answer exists.</p>
+            <div class="example">
+              <span>Required signature</span>
+              <code>def two_sum(nums, target):</code>
+            </div>
+            <div class="example">
+              <span>Example</span>
+              <code>nums = [2, 7, 11, 15]<br />target = 9<br />→ [0, 1]</code>
+            </div>
+            <p class="constraint">Keep the function name and signature exactly as shown.</p>
+          </section>
+
+          <section class="editor-panel">
+            <div class="editor-topbar">
+              <div class="traffic-lights"><i></i><i></i><i></i></div>
+              <span>solution.py</span>
+              <div class="editor-status" id="editor-status">Runner 1 · Line 1</div>
+            </div>
+            <div class="editor-body" id="editor-body" aria-label="Python code editor"></div>
+            <div class="editor-controls">
+              <div>
+                <button class="code-button up" id="line-up" title="Move back one line">↑ <span>Up</span></button>
+                <button class="code-button enter" id="line-enter">Enter <span>↵</span></button>
+              </div>
+              <button class="run-button" id="run-tests">Run tests <span>▶</span></button>
+            </div>
+            <div class="swap-overlay hidden" id="swap-overlay">
+              <div id="swap-count">3</div>
+              <p>SWAP RUNNERS</p>
+            </div>
+          </section>
+
+          <section class="tests-panel">
+            <div class="tests-heading">
+              <div>
+                <p class="eyebrow">TEST SUITE</p>
+                <h2>Results</h2>
+              </div>
+              <span id="test-summary">Not run</span>
+            </div>
+            <div id="test-results" class="test-results">
+              <div class="test-placeholder">Run your code when you think it’s ready.</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="setup-view">
+        <div class="game-header">
+          <div>
+            <p class="eyebrow">DEVELOPER CONTROL</p>
+            <h1>Event <em>setup.</em></h1>
+          </div>
+          <p>Add teams before play begins, then start each event from its game tab.</p>
+        </div>
+
+        <div class="setup-grid">
+          <section class="setup-card">
+            <p class="eyebrow">EVENT DETAILS</p>
+            <h2>Event name</h2>
+            <form id="event-name-form" class="inline-form">
+              <input id="event-name-input" maxlength="48" placeholder="Event name" />
+              <button type="submit">Save</button>
+            </form>
+            <button class="danger-button" id="reset-scores">Reset games &amp; scores</button>
+          </section>
+          <section class="setup-card">
+            <p class="eyebrow">ROSTER</p>
+            <h2>Teams</h2>
+            <form id="add-team-form" class="inline-form">
+              <input id="team-name-input" maxlength="32" placeholder="New team name" />
+              <button type="submit">Add team</button>
+            </form>
+            <div id="team-list" class="team-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

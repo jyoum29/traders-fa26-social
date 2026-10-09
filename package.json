@@ -1,0 +1,20 @@
+{
+  "name": "traders-olympics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Live games and leaderboard for the Traders at MIT social.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pyodide": "^0.27.7",
+    "socket.io": "^4.8.1"
+  }
+}
